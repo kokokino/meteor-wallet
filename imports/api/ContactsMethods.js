@@ -2,6 +2,14 @@ import {Meteor} from "meteor/meteor";
 import { check } from "meteor/check";
 import { ContactsCollection } from "./ContactsCollection";
 
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+}
+
 Meteor.methods({
     'contacts.insert' ({ name, email, imageUrl }) {
         check(name, String);
@@ -14,7 +22,12 @@ Meteor.methods({
     },
     'contacts.remove' ({contactId}) {
         check(contactId, String);
-        return ContactsCollection.remove(contactId);
+        if (this.isSimulation) {
+            ContactsCollection.remove(contactId);
+        } else {
+            console.log('This contact was not removed');
+            sleep(2000);
+        }
     }
 });
 
