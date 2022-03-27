@@ -1,11 +1,43 @@
 import React from "react";
 import {ContactsCollection} from "../api/ContactsCollection";
 import {useTracker} from 'meteor/react-meteor-data';
+import { ErrorAlert } from "./components/ErrorAlert";
+import { SuccessAlert } from "./components/SuccessAlert";
 
 export const ContactList = () => {
+  const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+
+  const showError = (message) => {
+    setError(message);
+    setTimeout(() => {
+      setError('');
+    }, 5000);
+  }
+
+  const showSuccess = (message) => {
+    setSuccess(message);
+    setTimeout(() => {
+      setSuccess('');
+    }, 5000);
+  }
+
   const contacts = useTracker(() => {
     return ContactsCollection.find({}, { sort: { createdAt: -1 }}).fetch();
   });
+
+  const removeContact = (evt, _id) => {
+    evt.preventDefault();
+    Meteor.call('contacts.remove', {contactId: _id}, (errorResponse) => {
+      if (errorResponse) {
+        showError(errorResponse.error);
+        setSuccess('');
+      } else {
+        showSuccess('Contact Removed');
+        setError("");
+      }
+    });
+  };
 
   return (
     <div>
@@ -13,6 +45,8 @@ export const ContactList = () => {
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
           Contact List
         </h3>
+        {error && <ErrorAlert message={error} />}      
+        {success && <SuccessAlert message={success} />}
         <ul role="list" className="mt-4 border-t border-b border-gray-200 divide-y divide-gray-200">
           {contacts.map((person, personIdx) => (
             <li key={personIdx} className="py-4 flex items-center justify-between space-x-3">
@@ -23,6 +57,15 @@ export const ContactList = () => {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-900 truncate">{person.name}</p>
                   <p className="text-sm font-medium text-gray-500 truncate">{person.email}</p>
+                </div>
+                <div>
+                  <a
+                    href=""
+                    onClick={(evt) => removeContact(evt, person._id)}
+                    className="inline-flex items-center shadow-sm px-2.5 py-0.5 border border-gray-300 text-sm leading-5 font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Remove
+                  </a>
                 </div>
               </div>
             </li>
