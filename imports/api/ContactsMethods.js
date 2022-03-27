@@ -22,12 +22,16 @@ Meteor.methods({
     },
     'contacts.remove' ({contactId}) {
         check(contactId, String);
-        if (this.isSimulation) {
-            ContactsCollection.remove(contactId);
-        } else {
-            console.log('This contact was not removed');
-            sleep(2000);
-        }
+
+        // Uncomment to see delayed rejection of optimistic action
+        // if (this.isSimulation) {
+        //     ContactsCollection.remove(contactId);
+        // } else {
+        //     console.log('This contact was not removed');
+        //     sleep(2000);
+        // }
+
+        return ContactsCollection.remove(contactId);
     }
 });
 
